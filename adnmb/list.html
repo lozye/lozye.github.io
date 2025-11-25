@@ -17,7 +17,7 @@
                 黎明版-镜像
             </div>
             <ul class="nmb-side-ul">
-                <li><a href="http://adnmb.com" target="_blank">传送门</a></li>
+                <li><a href="//nmbxd.com" target="_blank">传送门</a></li>
                 <li><a href="/adnmb/list.html">时间线</a></li>
                 <li><a href='/adnmb/list.html?value=5452454E44494E47'>趋势</a></li>
                 <li><a href="/adnmb/history.html">收藏</a></li>
@@ -86,7 +86,7 @@
 
     <script type="text/html" id="temp_lst">
         <div class="nmb-thread-info">
-            <div class="nmb-thread-id">{{@topic.uid}}</div>
+            <div class="nmb-thread-id">{{#topic.uid}}</div>
             <div class="nmb-thread-date">{{topic.createdat}}</div>
             {{ if thread_type!=null }}
             <div class="nmb-thread-type">{{thread_type}}</div>
@@ -105,7 +105,7 @@
                 </a>
             </div>
             {{ /if }}
-            {{@topic.content}}
+            {{#topic.content}}
             <div style="clear:both"></div>
         </div>
     </script>

@@ -30,11 +30,11 @@ var nmbstyleJS = (function () {
         if (m_onmsg) return;
 
         var fn = fn || function () { };
-        m_side_off();
+        m_side_off(true);
         m_foot_off();
         m_onmsg = true;
         var mask = get_mask();
-        mask.style.setProperty("display", "block");
+        mask_on(mask);
         var box = document.getElementsByClassName("nmb-msg")[0];
         box.getElementsByClassName("nmb-msg-content")[0].innerHTML = msg;
         box.style.setProperty("display", "block");
@@ -47,6 +47,15 @@ var nmbstyleJS = (function () {
         }
         mask.addEventListener("click", v_close, false);
     }
+
+    var mask_on = function (mask) {
+        var tem_height = window.outerHeight;
+        if (win_height != tem_height) {
+            mask.style.height = tem_height + 'px';
+            win_height = tem_height;
+        }
+        mask.style.setProperty("display", "block");
+    };//end mask_on
 
     var msg_off = function () {
         m_onmsg = false;
@@ -81,8 +90,8 @@ var nmbstyleJS = (function () {
     var m_refush = function () { if (nmb_lst) window.location.reload(); };
 
 
-    var m_side_off = function () {
-        if (!m_side) { m_refush(); return; }
+    var m_side_off = function (ignore) {
+        if (!ignore && !m_side) { m_refush(); return; }
         m_side = false;
         get_side().style.setProperty("display", "none");
         get_mask().style.setProperty("display", "none");
@@ -94,14 +103,16 @@ var nmbstyleJS = (function () {
 
         if (m_foot) return;
         m_foot = true;
-        get_foot().style.setProperty("display", "block")
-        get_content().style.setProperty("bottom", "50px");
+        // debug
+        //msg(`body=>${document.body.clientHeight}, wapper=>${document.querySelector(".nmb-wapper").clientHeight}`);
+
+        var foot = get_foot();
+        foot.style.setProperty("display", "block");
     }
     var m_foot_off = function () {
         if (!m_foot) return;
         m_foot = false;
         get_foot().style.setProperty("display", "none")
-        get_content().style.setProperty("bottom", "0");
     }
     //监听滚动_滚动到底部触发next事件
     var m_scroll = function (e) {
@@ -121,6 +132,8 @@ var nmbstyleJS = (function () {
     //监听滑动事件
     var on_right = function (e) { m_side_on(); }
     var on_close = function (e) {
+        if (m_foot) { m_foot_off(); return; }
+
         window.opener = null;
         window.open('', '_self');
         window.close();
@@ -156,7 +169,7 @@ var nmbstyleJS = (function () {
         var mask = get_mask();
         //在弹出窗口时禁用滚动
         mask.addEventListener("touchmove", function (e) { e.stopPropagation(); }, false);
-        setTimeout(function () { jsop("http://tajs.qq.com/stats?sId=44452194"); }, 1000);
+        //setTimeout(function () { jsop("http://tajs.qq.com/stats?sId=44452194"); }, 1000);
     }
 
     //注册

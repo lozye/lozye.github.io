@@ -52,7 +52,7 @@
                 黎明版-镜像
             </div>
             <ul class="nmb-side-ul">
-                <li><a href="http://adnmb.com" target="_blank">传送门</a></li>
+                <li><a href="//nmbxd.com" target="_blank">传送门</a></li>
                 <li><a href="/adnmb/list.html">时间线</a></li>
                 <li><a href='/adnmb/list.html?value=5452454E44494E47'>趋势</a></li>
                 <li><a href="/adnmb/history.html">收藏</a></li>
@@ -69,6 +69,8 @@
                     <dd><p>那么，说出你的愿望</p></dd>
                     <dd><input type="text" autocomplete="off"></dd>
                     <dd><span>跳转</span></dd>
+                    <dd><p></p></dd>
+                    <dd><p>和我定下契约 成为马猴烧酒吧 [ $:_____ ]</p></dd>
                 </dl>
             </div>
         </div>
@@ -116,6 +118,13 @@
                     if (!isNaN(val))
                         target = val;
                     else {
+                        if (val.startsWith("$:")) {
+                            var key = val.substr(2).trim();
+                            localStorage.setItem("nmb_feed", key);
+                            nmbstyleJS.msg("契约成立！");
+                            return;
+                        }
+
                         var array = val.match(reg);
                         if (array == null) return;
                         target = array[1];

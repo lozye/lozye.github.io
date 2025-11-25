@@ -1,4 +1,5 @@
 ﻿//对nmb的内容做控制
+
 //更新了叠加方法，原始的太弱了
 var adnmbJS = (function () {
     //http://cover.acfunwiki.org/luwei.json
@@ -27,9 +28,15 @@ var adnmbJS = (function () {
         "看什么看你也是ATM", "淦，是n98肥宅！", "我狗比酱今日便是要打爆你喵喵酱的狗头", "欧吉车技腐乳句句然到雾入饭卡死了",
         "你说得对，那也轮不到你来说啊？？", "光来！"];
 
+
+
+    var link_notice = {
+        fail: "ID REJECT"
+    };
+
     var loadingText = function () { return loadingArray[parseInt(Math.random() * loadingArray.length)]; };
 
-    var m_host = "http://api.lozye.com";// "http://localhost:80";//
+    var m_host = "http://47.109.95.192:8080";//"http://localhost:8398";//
 
     var debug = function () {
         jsonp(m_host + "/adnmb/doc/14886120");
@@ -76,6 +83,7 @@ var adnmbJS = (function () {
             doc_compile = template.compile(document.getElementById("temp_doc").innerHTML);
         }
         var dd = document.createElement("li");
+        item.content = hiddentext(item.content);
         dd.innerHTML = doc_compile(item);
         return dd;
     };
@@ -85,6 +93,7 @@ var adnmbJS = (function () {
             ref_compile = template.compile(document.getElementById("temp_ref").innerHTML);
         }
         var dd = document.createElement("div");
+        item.content = hiddentext(item.content);
         dd.innerHTML = ref_compile(item);
         return dd;
     };
@@ -94,6 +103,7 @@ var adnmbJS = (function () {
             lst_compile = template.compile(document.getElementById("temp_lst").innerHTML);
         }
         var dd = document.createElement("dd");
+        item.topic.content = hiddentext(item.topic.content);
         dd.innerHTML = lst_compile(item);
         return dd;
     };
@@ -105,12 +115,21 @@ var adnmbJS = (function () {
     var doc_po = "";
     var doc_size = 1;
     var topic_id = 0;
+    var doc_poonly = 0;
+
+    /** 备注旧地址 */
+    var url_push = function () {
+        var _newaddress = "docment.html?id=" + topic_id.toString() + "&p=" + m_page.toString();
+        history.pushState({}, '', _newaddress);
+    };//end url_push
+
     var doc = function (data) {
         nmbstyleJS.finish();
         var loading = document.getElementsByClassName("nmb-content-loading")[0];
         loading.style.setProperty("display", "none");
-        if (data.status !== 0) { nmbstyleJS.msg("错误：" + data.msg); m_page--; return; }
+        if (data.status !== 0) { nmbstyleJS.msg("错误：" + data.message); m_page--; return; }
         doc_size = data.thread_size;
+        url_push();
         if (doc_size <= m_page) { doc_over = true; } else { doc_over = false; }
 
         var doc = data.docment;
@@ -143,11 +162,13 @@ var adnmbJS = (function () {
             ref_hash[item.thread_id] = item;
             doc_hash[item.thread_id] = true;
             if (doc_po === item.uid) item.uid = "<b>" + item.uid + "</b>";
+            else if (doc_poonly == 1) continue;
             target.appendChild(v_template(item));
         }
     };//end doc
 
     var on_doc = function () {
+        on_poonlyload();
         var loading = document.getElementsByClassName("nmb-content-loading")[0];
         loading.innerHTML = loadingText();
         loading.style.setProperty("display", "block");
@@ -158,6 +179,7 @@ var adnmbJS = (function () {
         on_forward(value);
         jsonp(m_host + "/adnmb/doc/" + value + "/" + m_page);
         nmbstyleJS.next(() => {
+            if (!doc_init) return;
             if (doc_over) {
                 var loading = document.getElementsByClassName("nmb-content-loading")[0];
                 loading.style.setProperty("display", "block");
@@ -186,6 +208,10 @@ var adnmbJS = (function () {
         }, false);
 
         var history = function () {
+            var feed_idx = window.localStorage.getItem("nmb_feed");
+            if (!feed_idx) { nmbstyleJS.msg(link_notice.fail); return; }
+            jsonp(m_host + "/adnmb/feedadd/" + feed_idx + "/" + id);
+            return;
             var topic = document.getElementById("nmb-topic");
             var _content = topic.getElementsByClassName("h-threads-content");
             var text = "";
@@ -203,7 +229,7 @@ var adnmbJS = (function () {
             history();
             var newTab = window.open();
             newTab.opener = null;
-            newTab.location = "https://adnmb2.com/m/t/" + id;
+            newTab.location = "//nmbxd.com/m/t/" + id;
             //window.location.href = "https://adnmb1.com/m/t/" + id;
         }, false);
 
@@ -214,19 +240,7 @@ var adnmbJS = (function () {
     //跳页选择器
     var page_selector = function (id) {
         if (!doc_init) return;
-        var html = "";
-        if (doc_size < 20) {
-            for (var i = 0; i < doc_size; i++) {
-                var p = i + 1;
-                if (p === m_page)
-                    html += "<i style='background-color:#eee;'>" + p + "</i>";
-                else
-                    html += "<i>" + p + "</i>";
-            }
-        }
-        else {
-            html = template("temp_jump", { "size": doc_size, "page": m_page });
-        }
+        var html = template("temp_jump", { "size": doc_size, "page": m_page });
         nmbstyleJS.msg(html);
         var v_jump = (x) => {
             m_page = x;
@@ -237,28 +251,34 @@ var adnmbJS = (function () {
             nmbstyleJS.msg_off();
             on_refresh(id);
         };
-        var v_short = () => {
-            var _array = document.getElementsByClassName("nmb-msg-content")[0].getElementsByTagName("i");
-            for (var i = 0; i < _array.length; i++)
-                _array[i].addEventListener("click", function (e) {
-                    m_page = parseInt(this.innerHTML);
-                    v_jump(m_page);
-                }, false);
-        };
-        var v_long = () => {
-            var target = document.getElementById("nmb-jump-for");
-            target.getElementsByTagName("button")[0].addEventListener("click", function (e) {
-                m_page = parseInt(target.getElementsByTagName("input")[0].value);
+
+        var target = document.getElementById("nmb-jump-for");
+        var _array = target.getElementsByTagName("i");
+        for (var i = 0; i < _array.length; i++)
+            _array[i].addEventListener("click", function (e) {
+                m_page = parseInt(this.innerHTML);
                 v_jump(m_page);
             }, false);
-        };
-        if (doc_size < 20) v_short(); else v_long();
+
+        var button = target.getElementsByTagName("button");
+        if (button && button.length == 1) {
+            button[0].addEventListener("click", function (e) {
+                m_page = parseInt(target.querySelector("input[type=number]").value);
+                v_jump(m_page);
+            }, false);
+        }
+
+        var checkbox = target.querySelector("input[type=checkbox]");
+        checkbox.checked = doc_poonly == 1;
+        checkbox.addEventListener("change", function (e) {
+            on_poonly(checkbox.checked);
+        });
     };
     /*-- 串方法结束 --*/
 
     /*-- 引用方法开始 --*/
     var ref = function (data) {
-        if (data.status !== 0) return;
+        if (data.status !== 0) { nmbstyleJS.msg("错误：" + data.message); return; }
         var item = data.item;
         if (data.topic_id !== 0 && topic_id !== data.topic_id) item["topic_id"] = data.topic_id;
         ref_hash[item.thread_id] = item;
@@ -299,18 +319,40 @@ var adnmbJS = (function () {
     };
     /*-- 引用方法结束 --*/
 
+    /** 只看楼主 */
+    var on_poonly = function (sw) {
+        if (typeof (sessionStorage) !== 'object') return;
+        doc_poonly = sw ? 1 : 0;
+        // console.log(doc_poonly);
+        sessionStorage.setItem("poonly", doc_poonly)
+    };//end on_poonly
+
+    var on_poonlyload = function () {
+        if (typeof (sessionStorage) !== 'object') return;
+        var str = sessionStorage.getItem("poonly")
+        if (str && str == 1) doc_poonly = 1;
+
+    };//end on_poonlyload
+
     /*-- 列表方法开始 --*/
     var m_page = 1;
     var m_moded = false;
     var m_nomore = false;
+    var list_init = false;
     var on_lst = function () {
         var loading = document.getElementsByClassName("nmb-content-loading")[0];
         loading.innerHTML = loadingText();
         loading.style.setProperty("display", "block");
         var request = Request();
+        var is_feed = window.location.pathname.endsWith("adnmb/history.html");
+        var feed_idx = is_feed ? window.localStorage.getItem("nmb_feed") : null;
+        if (is_feed && !feed_idx) { nmbstyleJS.msg(link_notice.fail); return; }
+
         var value = request["value"] || "2F662F254536253937254236254539253937254234254537254241254246";
-        jsonp(m_host + "/adnmb/lst/" + value);
+        var url = is_feed ? (m_host + "/adnmb/feed/" + feed_idx) : (m_host + "/adnmb/lst/" + value);
+        jsonp(url);
         nmbstyleJS.next(() => {
+            if (!list_init) return;
             var loading = document.getElementsByClassName("nmb-content-loading")[0];
             if (m_nomore) {
                 loading.style.setProperty("display", "block");
@@ -322,7 +364,7 @@ var adnmbJS = (function () {
             m_page++;
             loading.innerHTML = loadingText();
             loading.style.setProperty("display", "block");
-            jsonp(m_host + "/adnmb/lst/" + value + "/" + m_page);
+            jsonp(url + "/" + m_page);
         });
     };
     var lst_hash = {};
@@ -336,15 +378,18 @@ var adnmbJS = (function () {
         }
         document.getElementById("dynamic_lst").innerHTML = html;
     };
+
     var lst = function (data) {
         nmbstyleJS.finish();
         var loading = document.getElementsByClassName("nmb-content-loading")[0];
         loading.style.setProperty("display", "none");
 
         if (data.status !== 0) {
-            if (data.status === 6) { m_nomore = true; return; }
-            nmbstyleJS.msg("错误：" + data.msg); m_page--; return;
+            if (data.status === 3) { m_nomore = true; return; }
+            nmbstyleJS.msg("错误：" + data.message); m_page--; return;
         }
+        if (!list_init) { list_init = true; }
+
         add_module(data.modules);
         var target = document.getElementById("dynamic_view");
 
@@ -369,13 +414,44 @@ var adnmbJS = (function () {
     };
     /*-- 列表方法结束 --*/
 
+    /** 防止剧透 */
+    var hiddentext = function (html) {
+        var a = html.indexOf("[/h]");
+        if (a == -1) return html;
+        var hideenRegExp = /\[h\](.*?)\[\/h\]/g;
+        if (hideenRegExp.test(html)) return html.replace(hideenRegExp, '<span class="nmb-hidden-text">$1</span>');
+        else return html;
+    };//end hiddentext
+
+    /** 移除feed */
+    var remove_feed = function (e) {
+        var parent = e.parentElement.parentElement.parentElement;
+        var id = parent.querySelector("input").value;
+        var feed_idx = window.localStorage.getItem("nmb_feed");
+        if (!feed_idx) { nmbstyleJS.msg(link_notice.fail); return; }
+        jsonp(m_host + "/adnmb/feeddel/" + feed_idx + "/" + id);
+        var basis = parent.parentElement;
+        basis.removeChild(parent);
+    };
+    /* --移除feed方法结束 --*/
+
+    /** 回调状态处理 */
+    var on_status = function (data) {
+        if (data.status != 0) nmbstyleJS.msg("哎呀，失败啦。<br/>" + data.message);
+    };
+    /* --回调状态处理方法结束 --*/
+
     return {
         "lst": lst,
         "on_lst": on_lst,
+        "feedadd": on_status,
+        "feeddel": on_status,
+        "feed": lst,
         "ref": ref,
         "doc": doc,
         "on_doc": on_doc,
         "refresh": on_refresh,
-        "debug": debug
+        "debug": debug,
+        "remove_feed": remove_feed
     };
 })(nmbstyleJS);

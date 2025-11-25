@@ -78,6 +78,27 @@ body {
     font-family: 'Microsoft YaHei';
 }
 
+.grid-box {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+    .grid-box::after {
+        clear: both;
+    }
+
+    .grid-box::before, .grid-box::after {
+        content: ".";
+        display: block;
+        overflow: hidden;
+        visibility: hidden;
+        font-size: 0;
+        line-height: 0;
+        width: 0;
+        height: 0;
+    }
+
 /*-- adnmb start --*/
 
 .nmb-wapper {
@@ -172,9 +193,9 @@ body {
 }
 
 .nmb-foot {
-    position: absolute;
+    position: fixed;
     width: 100%;
-    height: 50px;
+    height: 40px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -182,6 +203,7 @@ body {
     overflow: hidden;
     z-index: 11;
     background-color: #00ab9a;
+    box-shadow: 5px 0px 20px rgba(0,0,0,0.6);
 }
 
 .nmb-content {
@@ -235,13 +257,13 @@ body {
 /*-- 自定义底部样式 --*/
 .nmb-foot-table {
     width: 100%;
-    height: 50px;
+    height: 40px;
     color: white;
 }
 
     .nmb-foot-table td {
         width: 25%;
-        line-height: 50px;
+        line-height: 40px;
         text-align: center;
     }
 /*-- 自定义侧边栏样式 --*/
@@ -404,9 +426,9 @@ body {
 
 .nmb-content-append ul li {
     display: block;
-    margin: 1px 3px 0px 3px;
-    padding-bottom: 5px;
-    border-bottom: 1px solid #bfb99e;
+    margin: 0 5px 0 5px; 
+    padding: 2px 0px 5px 0px;
+    border-bottom: 1px solid #eee;
 }
 
 .nmb-ref {
@@ -417,49 +439,64 @@ body {
     border-left: 7px solid #00ab9a;
 }
 
-/* 跳转框 */
-
-.nmb-msg-content i {
-    display: inline-block;
-    min-width: 20px;
-    padding: 0 5px;
-    height: 25px;
-    line-height: 25px;
-    text-align: center;
-    font-style: normal;
-    font-size: 14px;
-    font-weight: bold;
-    color: #00ab9a;
-    margin: 5px 0px 0 0;
+.nmb-msg-jump {
+    width: 95%;
+    margin: auto;
 }
 
-    .nmb-msg-content i:hover {
-        background-color: #00ab9a;
-        color: white;
+    .nmb-msg-jump label {
+        font-size: 12px;
+        color: #00ab9a;
     }
 
-.nmb-msg-jump label {
-    font-size: 12px;
-    color: #00ab9a;
+    .nmb-msg-jump u, .nmb-msg-jump i {
+        width: 15%;
+        margin-left: 2%;
+        height: 40px;
+        line-height: 40px;
+        display: inline-block;
+        font-size: 14px;
+        text-align: center;
+        text-decoration: none;
+        font-style: normal;
+    }
+
+    .nmb-msg-jump i {
+        color: #00ab9a;
+    }
+
+        .nmb-msg-jump i:hover {
+            background-color: #00ab9a;
+            color: white;
+        }
+
+    .nmb-msg-jump input,
+    .nmb-msg-jump button {
+        display: inline-block;
+        border: none;
+        background: none;
+        outline: none;
+        text-align: center;
+        font-size: 14px;
+        width: 80%;
+        height: 27px;
+        margin-top: 10px;
+    }
+
+    .nmb-msg-jump button {
+        color: #00ab9a;
+        font-weight: bold;
+        font-size: 14px;
+        width: 18%;
+        height: 30px;
+    }
+
+.nmb-hidden-text {
+    background: #666;  
+    color:#666;
 }
 
-.nmb-msg-jump input,
-.nmb-msg-jump button {
-    display: block;
-    border: none;
-    background: none;
-    outline: none;
-    text-align: center;
-    font-size: 14px;
-    width: 40%;
-    height: 27px;
-    margin-top: 10px;
-    border: 1px solid #00ab9a;
-}
-
-.nmb-msg-jump button {
-    background-color: #00ab9a;
-    color: white;
-    width: 25%;
-    height: 30px;
-}
+    .nmb-hidden-text:hover {
+        background: transparent;  
+        color:#000;
+    }
